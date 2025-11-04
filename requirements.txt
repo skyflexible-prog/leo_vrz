@@ -1,0 +1,34 @@
+# Telegram Bot
+python-telegram-bot==22.5
+
+# Environment & Configuration
+python-dotenv==1.0.1
+pydantic==2.9.0
+pydantic-settings==2.5.0
+
+# Database
+pymongo==4.5.0
+motor==3.3.2
+
+# HTTP & API
+httpx==0.27.2
+aiohttp==3.9.5
+
+# Web Server (Health Check)
+fastapi==0.115.0
+uvicorn==0.30.0
+gunicorn==23.0.0
+
+# Scheduling & Background Tasks
+apscheduler==3.10.4
+
+# Date & Time
+pytz==2024.1
+python-dateutil==2.8.2
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.4
+
+# Security
+cryptography==43.0.0
