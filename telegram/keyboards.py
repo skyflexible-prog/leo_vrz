@@ -183,3 +183,4 @@ class BotKeyboards:
 
 # Global keyboard instance
 bot_keyboards = BotKeyboards()
+        
