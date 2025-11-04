@@ -60,15 +60,12 @@ class DeltaExchangeClient:
             
             response.raise_for_status()
             result = response.json()
-            
             bot_logger.log_api_call(endpoint, method, params or data, result)
             return result
             
         except Exception as e:
             bot_logger.error(f"API request failed: {method} {endpoint} - {str(e)}", exc_info=True)
             raise
-    
-    # Public Endpoints
     
     async def get_products(self) -> List[Dict]:
         """Get all available products"""
@@ -89,7 +86,6 @@ class DeltaExchangeClient:
         """Get top gainers and losers"""
         tickers = await self.get_tickers()
         
-        # Filter futures products and calculate percentage change
         futures = []
         for ticker in tickers:
             if ticker.get('product_type') == 'future':
@@ -105,7 +101,6 @@ class DeltaExchangeClient:
                 except:
                     continue
         
-        # Sort and get top/bottom
         sorted_futures = sorted(futures, key=lambda x: x['change_24h'], reverse=True)
         
         return {
@@ -114,25 +109,11 @@ class DeltaExchangeClient:
         }
     
     async def get_ohlc_candles(self, symbol: str, resolution: str, start: int, end: int) -> List[Dict]:
-        """
-        Get OHLC candlestick data
-        
-        Args:
-            symbol: Product symbol
-            resolution: Timeframe (1m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1w, 1M)
-            start: Start timestamp (seconds)
-            end: End timestamp (seconds)
-        """
-        params = {
-            'resolution': resolution,
-            'start': start,
-            'end': end
-        }
-        
+        """Get OHLC candlestick data"""
+        params = {'resolution': resolution, 'start': start, 'end': end}
         response = await self._request("GET", f"/v2/history/candles", params=params)
         candles = response.get('result', [])
         
-        # Convert to standard format
         formatted_candles = []
         for candle in candles:
             formatted_candles.append({
@@ -145,8 +126,6 @@ class DeltaExchangeClient:
             })
         
         return formatted_candles
-    
-    # Authenticated Endpoints
     
     async def get_wallet_balances(self) -> List[Dict]:
         """Get account wallet balances"""
@@ -163,7 +142,6 @@ class DeltaExchangeClient:
         params = {}
         if product_id:
             params['product_id'] = product_id
-        
         response = await self._request("GET", "/v2/orders", params=params, authenticated=True)
         return response.get('result', [])
     
@@ -171,17 +149,7 @@ class DeltaExchangeClient:
                          order_type: str = "market_order", 
                          limit_price: Optional[float] = None,
                          stop_loss_order: Optional[Dict] = None) -> Dict:
-        """
-        Place an order
-        
-        Args:
-            product_id: Product ID
-            size: Order size (number of contracts)
-            side: 'buy' or 'sell'
-            order_type: 'market_order' or 'limit_order'
-            limit_price: Limit price (required for limit orders)
-            stop_loss_order: Stop loss configuration
-        """
+        """Place an order"""
         order_data = {
             'product_id': product_id,
             'size': size,
@@ -202,9 +170,7 @@ class DeltaExchangeClient:
             bot_logger.log_order_placed(
                 order.get('id', 'N/A'),
                 order.get('product', {}).get('symbol', 'N/A'),
-                side,
-                size,
-                limit_price or 0
+                side, size, limit_price or 0
             )
         
         return response
@@ -224,10 +190,7 @@ class DeltaExchangeClient:
                 side = 'sell' if float(position.get('size', 0)) > 0 else 'buy'
                 
                 return await self.place_order(
-                    product_id=product_id,
-                    size=size,
-                    side=side,
-                    order_type='market_order'
+                    product_id=product_id, size=size, side=side, order_type='market_order'
                 )
         
         return {'success': False, 'error': 'Position not found'}
@@ -235,4 +198,7 @@ class DeltaExchangeClient:
     async def close(self):
         """Close HTTP client"""
         await self.client.aclose()
-      
+
+
+# Global client instance
+delta_client = DeltaExchangeClient()
